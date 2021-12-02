@@ -7,6 +7,7 @@ namespace AdventOfCode2021
     {
         public static void Main()
         {
+            Day2.Run();
             Day1();
         }
 
