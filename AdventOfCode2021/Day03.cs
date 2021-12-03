@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AdventOfCode2021
 {
@@ -1029,21 +1026,10 @@ namespace AdventOfCode2021
                 "100011101011",
             };
 
-            // assume all lines are the same length
-            var bitSums = new int[input[0].Length];
+            var numericInputs = input.Select(Numerify).ToArray();
 
-            foreach (var line in input)
-            {
-                var bits = line.ToCharArray().Select(b => b == '0' ? 0 : 1).ToArray(); // ints. bools be better. actual ints with bitwise ops probably what they're after even more so
-                for (int i = 0; i < bits.Length; i++)
-                {
-                    bitSums[i] += bits[i];
-                }
-            }
-
-            // what if there an equal number of 0 and 1 bits?
-            var mostCommonBits = bitSums.Select(b => b > input.Length / 2 ? 1 : 0).ToArray();
-            var leastCommonBits = Not(mostCommonBits);
+            var mostCommonBits = MostCommonBits(numericInputs);
+            var leastCommonBits = LeastCommonBits(numericInputs);
             var gamma = Bin2Dec(mostCommonBits);
             var delta = Bin2Dec(leastCommonBits);
 
@@ -1052,50 +1038,77 @@ namespace AdventOfCode2021
 
             Console.WriteLine($"Product = {gamma * delta}");
 
-            //var oxygenIndices = new List<int>();
-            //var co2Indices = new List<int>();
+            int lastO2reading = default;
+            int lastCO2reading = default;      // It's clearly not the default if I have to state it
 
-            int[] lastO2reading = new int[0];
-            int[] lastCO2reading = new int[0];
-
-            for (int i = 0; i < input.Length; i++)
+            var filteredNums = input.Select(Numerify).ToArray();
+            for (int b = 0; b < input[0].Length; b++)
             {
-                var line = input[i];
+                var mostCommonBitsInThisSet = MostCommonBits(filteredNums);
+                filteredNums = filteredNums.Where(i => i[b] == mostCommonBitsInThisSet[b]).ToArray();
 
-                // store the result of splitting them
-                // maybe put them in a 2d array or sth
-                var bits = line.ToCharArray().Select(b => b == '0' ? 0 : 1).ToArray(); // ints. bools be better. actual ints with bitwise ops probably what they're after even more so
-
-                bool bitsAlignWithMostCommonBits = true;
-                bool bitsAlignWithLeastCommonBits = true;
-                for (int b = 0; b < bits.Length; b++)
+                if (filteredNums.Count() == 1)
                 {
-                    // TODO zero or one equally common
-                    if (bits[b] != mostCommonBits[b])
-                    {
-                        bitsAlignWithMostCommonBits &= false;
-                        //break;
-                    }
-                    // TODO zero or one equally common
-                    if (bits[b] != leastCommonBits[b])
-                    {
-                        bitsAlignWithLeastCommonBits &= false;
-                    }
+                    lastO2reading = Bin2Dec(filteredNums.Single());
+                    break;
                 }
-
-                //if (bitsAlignWithMostCommonBits) oxygenIndices.Add(i);
-                //if (bitsAlignWithLeastCommonBits) co2Indices.Add(i);
-
-                if (bitsAlignWithMostCommonBits) lastO2reading = bits;
-                if (bitsAlignWithLeastCommonBits) lastCO2reading = bits;
-
             }
 
-            // TODO don't need to keep the lists, just the last one (and lets hope there is at least one
-            // TODO have already converted this number once before
-            Console.WriteLine($"O2 = {Bin2Dec(lastO2reading)}");
-            Console.WriteLine($"CO2 = {Bin2Dec(lastCO2reading)}");
+            filteredNums = input.Select(Numerify).ToArray();
+            for (int b = 0; b < input[0].Length; b++)
+            {
+                var leastCommonBitsInThisSet = LeastCommonBits(filteredNums);
+                filteredNums = filteredNums.Where(i => i[b] == leastCommonBitsInThisSet[b]).ToArray();
+
+                if (filteredNums.Count() == 1)
+                {
+                    lastCO2reading = Bin2Dec(filteredNums.Single());
+                    break;
+                }
+            }
+
+            Console.WriteLine($"O2 = {lastO2reading}");
+            Console.WriteLine($"CO2 = {lastCO2reading}");
+
+            Console.WriteLine($"life support rating = {lastO2reading * lastCO2reading}");
         }
+
+        private static int[] MostCommonBits(int[][] input)
+        {
+            int[] bitSums = CountBitsInPosition(input);
+
+            int ceil = (int)Math.Ceiling(input.Length / 2m);
+
+            return bitSums.Select(b => b >= ceil ? 1 : 0).ToArray();
+        }
+
+        private static int[] LeastCommonBits(int[][] input)
+        {
+            int[] bitSums = CountBitsInPosition(input);
+
+            int ceil = (int)Math.Ceiling(input.Length / 2m);
+            return bitSums.Select(b => b < ceil ? 1 : 0).ToArray();
+        }
+
+        private static int[] CountBitsInPosition(int[][] input)
+        {
+            // assume all lines are the same length
+            var bitSums = new int[input[0].Length];
+
+            foreach (var line in input)
+            {
+                for (int i = 0; i < line.Length; i++)
+                {
+                    bitSums[i] += line[i];
+                }
+            }
+
+            return bitSums;
+        }
+
+        // ints. bools be better. actual ints with bitwise ops probably what they're after even more so
+        private static int[] Numerify(string bitPattern)
+            => bitPattern.ToCharArray().Select(b => b == '0' ? 0 : 1).ToArray();
 
         private static int[] Not(int[] bits)
         {

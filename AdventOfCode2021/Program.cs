@@ -4,7 +4,7 @@
     {
         public static void Main()
         {
-            Day03.Run();
+            Day03.Run(); // Doesn't work
             Day02.Run();
             Day01.Run();
         }
