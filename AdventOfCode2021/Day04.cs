@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AdventOfCode2021
@@ -631,17 +632,30 @@ namespace AdventOfCode2021
 
             (int[] nums, Board[] boards) = ParseInput(input);
 
+            List<Board> boardsInPlay = boards.Where(b => !b.HasWon).ToList();
             foreach (var num in nums)
             {
-                foreach (var board in boards)
+                for (int i = boardsInPlay.Count - 1; i >= 0; i--)
                 {
+                    var board = boardsInPlay[i];
                     board.ApplyNumber(num);
 
                     if (board.HasWon)
                     {
-                        var score = num * board.SumOfRemainder;
-                        Console.WriteLine(score);
-                        return;
+                        board.Print();
+                        boardsInPlay.Remove(board);
+
+                        if (boardsInPlay.Count == 0)
+                        {
+                            var lastBoard = board;
+
+                            Console.WriteLine("\r\n####################################\r\n");
+                            lastBoard.Print();
+
+                            var score = num * lastBoard.SumOfRemainder;
+                            Console.WriteLine(score);
+                            return;
+                        }
                     }
                 }
             }
@@ -677,6 +691,29 @@ namespace AdventOfCode2021
                     }
                 }
             }
+
+#if DEBUG
+            public void Print()
+            {
+                for (int i = 0; i < SIZE; i++)
+                {
+                    for (int j = 0; j < SIZE; j++)
+                    {
+                        var r = _board[i, j]?.ToString() ?? "[-]";
+                        var c0 = Console.ForegroundColor;
+                        var c1 = r == "[-]" ? ConsoleColor.DarkGray : ConsoleColor.White;
+                        Console.ForegroundColor = c1;
+                        Console.Write(r.PadLeft(3) + " ");
+                        Console.ForegroundColor = c0;
+                    }
+
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("----------------------------");
+                Console.WriteLine();
+            }
+#endif
 
             public void ApplyNumber(int num)
             {
@@ -716,7 +753,7 @@ namespace AdventOfCode2021
 
                         for (int j = 0; j < SIZE; j++)
                         {
-                            allMarkedSoFar &= (_board[i, j] == null);  // could exit early when we know a row doesn't match, at the expense of extra comparisons in every step
+                            allMarkedSoFar &= (_board[j, i] == null);  // could exit early when we know a row doesn't match, at the expense of extra comparisons in every step
 
                         }
 
