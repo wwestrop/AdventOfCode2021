@@ -4,6 +4,7 @@
     {
         public static void Main()
         {
+            Day06.Run();
             Day05.Run();
             Day04.Run();
             Day03.Run();
