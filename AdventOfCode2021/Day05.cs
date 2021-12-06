@@ -522,14 +522,14 @@ namespace AdventOfCode2021
             var lines = ParseInput(input);
             var map = InitialiseMap(lines);
 
-            lines = lines.Where(l => l.start.x == l.end.x || l.start.y == l.end.y).ToArray();
+            //lines = lines.Where(l => l.start.x == l.end.x || l.start.y == l.end.y).ToArray();
 
             foreach (var line in lines)
             {
                 PlotLine(line, map);
             }
 
-            PrintMap(map);
+            //PrintMap(map);
             var crossings = CountCrossings(map);
             Console.WriteLine(crossings);
         }
