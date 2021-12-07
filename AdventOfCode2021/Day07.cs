@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,8 @@ namespace AdventOfCode2021
 
             var crabs = input.Split(",").Select(int.Parse).ToArray();
 
-            var canditatePositions = crabs.Distinct();
+            var canditatePositions = Enumerable.Range(crabs.Min(), crabs.Max());
+
             var cheapestPosition = canditatePositions
                 .Select(p => CostOfPosition(p, crabs))
                 .Min();
@@ -24,7 +26,25 @@ namespace AdventOfCode2021
             Console.WriteLine(cheapestPosition);
         }
 
+        private static ConcurrentDictionary<int, int> movementCosts = new ConcurrentDictionary<int, int>();
+
+        internal static int CostOfMovement(int movementSize)
+        {
+            return movementCosts.GetOrAdd(
+                movementSize,
+                m =>
+                {
+                    int fuelCost = 0;
+                    for (int i = movementSize; i > 0; i--)
+                    {
+                        fuelCost += i;
+                    }
+
+                    return fuelCost;
+                });
+        }
+
         internal static int CostOfPosition(int candidatePosition, int[] crabs)
-            => crabs.Sum(c => Math.Abs(c - candidatePosition));
+            => crabs.Sum(c => CostOfMovement(Math.Abs(c - candidatePosition)));
     }
 }
