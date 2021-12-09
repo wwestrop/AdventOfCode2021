@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AdventOfCode2021
 {
@@ -126,9 +123,22 @@ namespace AdventOfCode2021
             Console.WriteLine(risk);
 
             var basinMap = CreateBasinMap(heightMap);
+
+
+
+            var allPoints = basinMap.OfType<int>().ToList();
+            var topThreeBasins = allPoints.Distinct()
+                .Select(n => allPoints.Count(p => p == n))
+                .OrderByDescending(s => s)
+                .Take(3)
+                .ToList();
+
+            var product = topThreeBasins[0] * topThreeBasins[1] * topThreeBasins[2];
+
+            Console.WriteLine(product);
         }
 
-        private static int[,] CreateBasinMap(int[,] input)
+        private static int?[,] CreateBasinMap(int[,] input)
         {
             // Basins -> imagine as a bitmap and do a flood fill on each pixel
             // (that hasn't already been flood filled),
@@ -149,12 +159,6 @@ namespace AdventOfCode2021
             {
                 for (int c = 0; c < width; c++)
                 {
-                    // Not strictly neceesary since the `Fill` routine will immediately exit on a 9
-                    //if (input[c, r] == 9)
-                    //{
-                    //    continue;
-                    //}
-
                     if (basinMap[c, r] == null)
                     {
                         // This cell not filled yet
@@ -178,8 +182,7 @@ namespace AdventOfCode2021
                 Console.WriteLine();
             }
 
-
-            throw new NotImplementedException();
+            return basinMap;
         }
 
         private static void Fill(int[,] input, int?[,] output, int withNumber, int atX, int atY)
@@ -187,23 +190,26 @@ namespace AdventOfCode2021
             int width = input.GetLength(0);
             int height = input.GetLength(1);
 
-            for (int r = atY; r < height; r++)
+            if (input[atX, atY] == 9 || output[atX, atY] != null)
             {
-                // Walk back the until you find the left edge of this basin (or the whole map)
-                int c = atX;
-                while (input[c, r] != 9 && c > 0)
-                {
-                    c--;
-                }
+                return;
+            }
 
-                for (; c < width; c++)
-                {
-                    if (input[c, r] == 9) continue;
+            output[atX, atY] = withNumber;
 
-                    // I have to walk the X backwards as I go down the rows
-                    // otherwise this will only partially do it
-                    output[c, r] = withNumber;
-                }
+            if (atX != 0)
+            {
+                Fill(input, output, withNumber, atX - 1, atY);
+            }
+
+            if (atX != width - 1)
+            {
+                Fill(input, output, withNumber, atX + 1, atY);
+            }
+
+            if (atY != height - 1)
+            {
+                Fill(input, output, withNumber, atX, atY + 1);
             }
         }
 
