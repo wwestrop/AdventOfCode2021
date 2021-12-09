@@ -124,6 +124,87 @@ namespace AdventOfCode2021
             var risk = FindLowPoints(heightMap).Select(p => p + 1).Sum();
 
             Console.WriteLine(risk);
+
+            var basinMap = CreateBasinMap(heightMap);
+        }
+
+        private static int[,] CreateBasinMap(int[,] input)
+        {
+            // Basins -> imagine as a bitmap and do a flood fill on each pixel
+            // (that hasn't already been flood filled),
+            // counting 9's as the "edges" of the shape you're filling in
+
+            // I'm doing a system where as I flood each shape, I assign that 
+            // shape a number, and change the source heightmap to refer to that number
+            // 
+            // I can then count the "pixels" in that shape by number
+            var basinNum = 0;
+            var basins = new List<int>();
+
+            int width = input.GetLength(0);
+            int height = input.GetLength(1);
+
+            var basinMap = new int?[width, height];
+            for (int r = 0; r < height; r++)
+            {
+                for (int c = 0; c < width; c++)
+                {
+                    // Not strictly neceesary since the `Fill` routine will immediately exit on a 9
+                    //if (input[c, r] == 9)
+                    //{
+                    //    continue;
+                    //}
+
+                    if (basinMap[c, r] == null)
+                    {
+                        // This cell not filled yet
+                        Fill(input, basinMap, basinNum++, c, r);
+                    }
+                }
+            }
+
+
+
+
+            for (int r = 0; r < height; r++)
+            {
+                for (int c = 0; c < width; c++)
+                {
+                    var me = basinMap[c, r];
+                    Console.BackgroundColor = me == null ? ConsoleColor.Black : ConsoleColor.DarkRed;
+                    Console.Write(me == null ? " " : me.ToString().Substring(0,1));
+                    Console.BackgroundColor = ConsoleColor.Black;
+                }
+                Console.WriteLine();
+            }
+
+
+            throw new NotImplementedException();
+        }
+
+        private static void Fill(int[,] input, int?[,] output, int withNumber, int atX, int atY)
+        {
+            int width = input.GetLength(0);
+            int height = input.GetLength(1);
+
+            for (int r = atY; r < height; r++)
+            {
+                // Walk back the until you find the left edge of this basin (or the whole map)
+                int c = atX;
+                while (input[c, r] != 9 && c > 0)
+                {
+                    c--;
+                }
+
+                for (; c < width; c++)
+                {
+                    if (input[c, r] == 9) continue;
+
+                    // I have to walk the X backwards as I go down the rows
+                    // otherwise this will only partially do it
+                    output[c, r] = withNumber;
+                }
+            }
         }
 
         private static int[,] ParseInput(string input)
@@ -162,16 +243,16 @@ namespace AdventOfCode2021
                     {
                         lowPoints.Add(heightMap[c, r]);
 
-                        Console.BackgroundColor = ConsoleColor.DarkRed;
-                        Console.Write(heightMap[c, r]);
-                        Console.BackgroundColor = ConsoleColor.Black;
+                        //Console.BackgroundColor = ConsoleColor.DarkRed;
+                        //Console.Write(heightMap[c, r]);
+                        //Console.BackgroundColor = ConsoleColor.Black;
                     }
                     else
                     {
-                        Console.Write(heightMap[c, r]);
+                        //Console.Write(heightMap[c, r]);
                     }
                 }
-                Console.WriteLine();
+                //Console.WriteLine();
             }
 
             return lowPoints;
