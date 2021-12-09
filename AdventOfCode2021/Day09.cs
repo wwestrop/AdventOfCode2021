@@ -158,35 +158,56 @@ namespace AdventOfCode2021
             {
                 for (int c = 0; c < width; c++)
                 {
-                    if (!HasLowerNeighbours(heightMap, new Point(c, r)))
+                    if (IsLowPoint(heightMap, new Point(c, r)))
                     {
                         lowPoints.Add(heightMap[c, r]);
+
+                        Console.BackgroundColor = ConsoleColor.DarkRed;
+                        Console.Write(heightMap[c, r]);
+                        Console.BackgroundColor = ConsoleColor.Black;
+                    }
+                    else
+                    {
+                        Console.Write(heightMap[c, r]);
                     }
                 }
+                Console.WriteLine();
             }
 
             return lowPoints;
         }
 
-        private static bool HasLowerNeighbours(int [,] heightMap, Point coordinate)
+        private static bool IsLowPoint(int[,] heightMap, Point coordinate) {
+
+            var me = heightMap[coordinate.X, coordinate.Y];
+            return GetNeighbours(heightMap, coordinate).All(n => n > me);
+        }
+
+        private static IEnumerable<int> GetNeighbours(int[,] heightMap, Point coordinate)
         {
             int width = heightMap.GetLength(0);
             int height = heightMap.GetLength(1);
 
-            int clipX(int x)
-                => Math.Min(Math.Max(x, 0), width - 1);
-
-            int clipY(int y)
-                => Math.Min(Math.Max(y, 0), height - 1);
-
-            var up = heightMap[coordinate.X, clipY(coordinate.Y - 1)];
-            var down = heightMap[coordinate.X, clipY(coordinate.Y + 1)];
-            var left = heightMap[clipX(coordinate.X - 1), coordinate.Y];
-            var right = heightMap[clipX(coordinate.X + 1), coordinate.Y];
-
-            var me = heightMap[coordinate.X, coordinate.Y];
-
-            return up < me || down < me || left < me || right < me;
+            if (coordinate.Y != 0)
+            {
+                // up
+                yield return heightMap[coordinate.X, coordinate.Y - 1];
+            }
+            if (coordinate.Y != height - 1)
+            {
+                // down
+                yield return heightMap[coordinate.X, coordinate.Y + 1];
+            }
+            if (coordinate.X != 0)
+            {
+                // left
+                yield return heightMap[coordinate.X - 1, coordinate.Y];
+            }
+            if (coordinate.X != width - 1)
+            {
+                // right
+                yield return heightMap[coordinate.X + 1, coordinate.Y];
+            }
         }
         private static int CharToInt(char c)
         {
