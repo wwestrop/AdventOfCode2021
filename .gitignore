@@ -1,3 +1,5 @@
 ﻿AdventOfCode2021/bin
 AdventOfCode2021/obj
 *.suo
+bin/
+obj/
