@@ -3,3 +3,4 @@ AdventOfCode2021/obj
 *.suo
 bin/
 obj/
+.vs/
