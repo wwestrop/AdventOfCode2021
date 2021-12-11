@@ -74,6 +74,23 @@ namespace AdventOfCode2021
                 }
                 Console.WriteLine();
             }
+
+            for (int i = 0; i < width + 15; i++) Console.Write("-");
+            Console.WriteLine();
+        }
+
+        public static void ManipulateCells<T>(T[,] input, Func<T, T> manipulation)
+        {
+            int width = input.GetLength(0);
+            int height = input.GetLength(1);
+
+            for (int r = 0; r < height; r++)
+            {
+                for (int c = 0; c < width; c++)
+                {
+                    input[c, r] = manipulation(input[c, r]);
+                }
+            }
         }
     }
 }
