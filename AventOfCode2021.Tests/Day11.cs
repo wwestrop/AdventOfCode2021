@@ -30,6 +30,23 @@ namespace AventOfCode2021.Tests
             return numFlashes;
         }
 
+        public int GetSynchronisedStepNum(string input)
+        {
+            var octopususes = Common.ParseNumberGrid(input);
+
+            for (int step = 0; ; step++)
+            {
+                SimulateFlashes(octopususes);
+
+                ResetFlashedCells(octopususes);
+
+                if (octopususes.OfType<int>().All(c => c ==0))
+                {
+                    return step + 1;
+                }
+            }
+        }
+
         [Theory]
         [InlineData(1, 9)]
         [InlineData(2, 9)]
@@ -64,6 +81,9 @@ namespace AventOfCode2021.Tests
 
             var numFlashes = ExampleRunner(input, steps);
             Assert.Equal(expectedFlashes, numFlashes);
+
+            var synchronisedStepNum = GetSynchronisedStepNum(input);
+            Assert.Equal(195, synchronisedStepNum);
         }
 
         [Theory]
@@ -83,6 +103,9 @@ namespace AventOfCode2021.Tests
 
             var numFlashes = ExampleRunner(input, steps);
             Console.WriteLine(numFlashes);
+
+            var synchronisedStepNum = GetSynchronisedStepNum(input);
+            Console.WriteLine(synchronisedStepNum);
         }
 
         private static void ResetFlashedCells(int[,] input)
