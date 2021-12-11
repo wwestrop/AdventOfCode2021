@@ -131,18 +131,9 @@ namespace AventOfCode2021.Tests
         }
 
         private void SimulateFlashes(int[,] input)
-        {
-            int width = input.GetLength(0);
-            int height = input.GetLength(1);
-
-            for (int r = 0; r < height; r++)
-            {
-                for (int c = 0; c < width; c++)
-                {
-                    IncrementEnergyAt(input, new Point(c, r));
-                }
-            }
-        }
+            => Common.ManipulateCells(
+                input,
+                (i, x, y) => IncrementEnergyAt(i, new Point(x, y)));
 
         private static IEnumerable<Point> GetNeighbourCoordinates(int[,] input, Point coordinate)
         {
