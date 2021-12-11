@@ -695,6 +695,11 @@ namespace AdventOfCode2021
 #if DEBUG
             public void Print()
             {
+                //Common.PrintArray(
+                //    _board,
+                //    highlight: i => i != null,
+                //    conversion: i => (i?.ToString() ?? "[-]").PadLeft(3) + " ");
+
                 for (int i = 0; i < SIZE; i++)
                 {
                     for (int j = 0; j < SIZE; j++)

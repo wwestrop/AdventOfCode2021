@@ -167,20 +167,10 @@ namespace AdventOfCode2021
                 }
             }
 
-
-
-
-            for (int r = 0; r < height; r++)
-            {
-                for (int c = 0; c < width; c++)
-                {
-                    var me = basinMap[c, r];
-                    Console.BackgroundColor = me == null ? ConsoleColor.Black : ConsoleColor.DarkRed;
-                    Console.Write(me == null ? " " : me.ToString().Substring(0,1));
-                    Console.BackgroundColor = ConsoleColor.Black;
-                }
-                Console.WriteLine();
-            }
+            Common.PrintArray(
+                basinMap,
+                highlight: i => i != null,
+                conversion: i => i == null ? " " : i.ToString().Substring(0, 1));
 
             return basinMap;
         }
@@ -214,25 +204,7 @@ namespace AdventOfCode2021
         }
 
         private static int[,] ParseInput(string input)
-        {
-            var rows = input.Split(Environment.NewLine);
-
-            var width = rows[0].Length;        // Assume they're all equal
-            var height = rows.Count();
-
-            int[,] result = new int[width, height];
-
-            for (int r = 0; r < height; r++)
-            {
-                var cols = rows[r].ToCharArray();
-                for (int c = 0; c < width; c++)
-                {
-                    result[c, r] = CharToInt(cols[c]);
-                }
-            }
-
-            return result;
-        }
+            => Common.ParseNumberGrid(input);
 
         private static List<int> FindLowPoints(int[,] heightMap)
         {
@@ -295,22 +267,6 @@ namespace AdventOfCode2021
                 // right
                 yield return heightMap[coordinate.X + 1, coordinate.Y];
             }
-        }
-        private static int CharToInt(char c)
-        {
-            return c switch
-            {
-                '0' => 0,
-                '1' => 1,
-                '2' => 2,
-                '3' => 3,
-                '4' => 4,
-                '5' => 5,
-                '6' => 6,
-                '7' => 7,
-                '8' => 8,
-                '9' => 9,
-            };
         }
     }
 }
