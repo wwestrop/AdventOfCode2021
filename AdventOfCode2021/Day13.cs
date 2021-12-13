@@ -958,30 +958,63 @@ fold along y=6";
             //    highlight: d => d,
             //    conversion: d => d ? "#" : ".");
 
-            for (int f = 0; f < 1; f++)
+            for (int f = 0; f < folds.Length; f++)
             {
                 var fold = folds[f];
 
                 if (fold.axis == 'x')
                 {
-                    FoldX(dots, fold.location);
+                    dots = FoldX(dots, fold.location);
                 }
                 else
                 {
-                    FoldY(dots, fold.location);
+                    dots = FoldY(dots, fold.location);
                 }
             }
 
-            //Common.PrintArray(
-            //    dots,
-            //    highlight: d => d,
-            //    conversion: d => d ? "#" : ".");
+            var result = TrimArray(dots);
+            Common.PrintArray(
+                result,
+                highlight: d => d,
+                conversion: d => d ? "#" : ".");
 
             var numDots = dots.OfType<bool>().Count(d => d);
             Console.WriteLine(numDots);
         }
 
-        private static void FoldX(bool[,] dots, int location)
+        private static bool[,] TrimArray(bool[,] input)
+        {
+            int width = 0;
+            int height = 0;
+
+            int fullWidth = input.GetLength(0);
+            int fullHeight = input.GetLength(1);
+
+            for (int r = 0; r < fullHeight; r++)
+            {
+                for (int c = 0; c < fullWidth; c++)
+                {
+                    if (input[c, r])
+                    {
+                        width = Math.Max(width, c + 1);
+                        height = Math.Max(height, r + 1);
+                    }
+                }
+            }
+
+            var result = new bool[width, height];
+            for (int r = 0; r < height; r++)
+            {
+                for (int c = 0; c < width; c++)
+                {
+                    result[c, r] = input[c, r];
+                }
+            }
+
+            return result;
+        }
+
+        private static bool[,] FoldX(bool[,] dots, int location)
         {
             var width = dots.GetLength(0);
             var height = dots.GetLength(1);
@@ -992,14 +1025,16 @@ fold along y=6";
                 {
                     if (dots[c, r] == true)
                     {
-                        dots[c, r] = false; // null it out to save reallocating a smaller, folded array
+                        dots[c, r] = false;
                         dots[width - c - 1, r] = true;
                     }
                 }
             }
+
+            return TrimArray(dots);
         }
 
-        private static void FoldY(bool[,] dots, int location)
+        private static bool[,] FoldY(bool[,] dots, int location)
         {
             var width = dots.GetLength(0);
             var height = dots.GetLength(1);
@@ -1010,11 +1045,13 @@ fold along y=6";
                 {
                     if (dots[c, r] == true)
                     {
-                        dots[c, r] = false; // null it out to save reallocating a smaller, folded array
+                        dots[c, r] = false;
                         dots[c, height - r - 1] = true;
                     }
                 }
             }
+
+            return TrimArray(dots);
         }
 
         private static (bool[,] dots, Fold[] folds) Parse(string input)
