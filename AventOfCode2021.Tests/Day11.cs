@@ -109,7 +109,7 @@ namespace AventOfCode2021.Tests
         }
 
         private static void ResetFlashedCells(int[,] input)
-            => Common.ManipulateCells(input, c => c == -1 ? 0 : c);
+            => Common.ManipulateGridCells(input, c => c == -1 ? 0 : c);
 
         private static void IncrementEnergyAt(int[,] input, Point coordiante)
         {
@@ -131,7 +131,7 @@ namespace AventOfCode2021.Tests
         }
 
         private void SimulateFlashes(int[,] input)
-            => Common.ManipulateCells(
+            => Common.ManipulateGridCells(
                 input,
                 (i, x, y) => IncrementEnergyAt(i, new Point(x, y)));
 

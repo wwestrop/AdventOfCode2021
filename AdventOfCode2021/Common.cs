@@ -79,15 +79,15 @@ namespace AdventOfCode2021
             Console.WriteLine();
         }
 
-        public static void ManipulateCells<T>(T[,] input, Func<T, T> manipulation)
+        public static void ManipulateGridCells<T>(T[,] input, Func<T, T> manipulation)
         {
             Action <T[,], int, int> thunkedManipulation
                 = (T[,] i, int x, int y) => i[x, y] = manipulation(i[x, y]);
 
-            ManipulateCells(input, thunkedManipulation);
+            ManipulateGridCells(input, thunkedManipulation);
         }
 
-        public static void ManipulateCells<T>(T[,] input, Action<T[,], int, int> manipulation)
+        public static void ManipulateGridCells<T>(T[,] input, Action<T[,], int, int> manipulation)
         {
             int width = input.GetLength(0);
             int height = input.GetLength(1);
