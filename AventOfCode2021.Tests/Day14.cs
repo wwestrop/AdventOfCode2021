@@ -67,8 +67,10 @@ CN -> C";
             Assert.Equal(expectedLength, result.Length);
         }
 
-        [Fact]
-        public void ExampleScoring()
+        [Theory]
+        [InlineData(10, 1588)]
+        [InlineData(40, 2188189693529)]
+        public void ExampleScoring(int steps, long expectedScore)
         {
             var input = @"NNCB
 
@@ -89,9 +91,9 @@ BC -> B
 CC -> N
 CN -> C";
 
-            var result = PerformInsertions(input, steps: 10);
+            var result = PerformInsertions(input, steps);
             var score = Score(result);
-            Assert.Equal(1588, score);
+            Assert.Equal(expectedScore, score);
         }
 
         [Fact]
@@ -206,11 +208,11 @@ OP -> P";
             Console.WriteLine(score);
         }
 
-        private int Score(string input)
+        private long Score(string input)
         {
             var atomCounts = input.ToCharArray()
                 .GroupBy(c => c)
-                .Select(g => new { g.Key, Count = g.Count() })
+                .Select(g => new { g.Key, Count = g.LongCount() })
                 .ToList();
 
             var mostCommon = atomCounts.MaxBy(g => g.Count);
@@ -227,25 +229,34 @@ OP -> P";
 
             for (int i = 0; i < steps; i++)
             {
-                sb = new StringBuilder();
-                var templatePairs = Pairify(template);
+                sb = new StringBuilder(50_000);
+                //var templatePairs = Pairify(template);
 
-                foreach (var t in templatePairs)
+                for (int j = 0; j < template.Length - 1; j++)
                 {
-                    var rule = rules.Single(r => r.from == t);
+                    var templatePair = $"{template[j]}{template[j + 1]}";
+                    var ruleTarget = rules[templatePair];
 
-                    sb.Append(t.Substring(0, 1));
-                    sb.Append(rule.to);
+                    sb.Append(templatePair[0]);
+                    sb.Append(ruleTarget);
                 }
 
-                sb.Append(templatePairs.Last().Substring(1, 1));
+                //foreach (var t in templatePairs)
+                //{
+                //    var ruleTarget = rules[t];
+
+                //    sb.Append(t[0]);
+                //    sb.Append(ruleTarget);
+                //}
+
+                sb.Append(template.Last());
                 template = sb.ToString();
             }
             
             return template;
         }
 
-        private static (string template, (string from, string to)[] rules) Parse(string input)
+        private static (string template, Dictionary<string, string> rules) Parse(string input)
         {
             var pieces = input.Split("\r\n\r\n");
             var template = pieces[0];
@@ -256,14 +267,16 @@ OP -> P";
                                  let rhs = operands[1]
                                  select (@from: lhs, @to: rhs);
 
-            return (template, insertionRules.ToArray());
+            return (template, insertionRules.ToDictionary(k => k.from, v => v.to));
         }
 
         private static string[] Pairify(string input)
         {
             var chars = input.ToCharArray();
 
-            return chars.Zip(chars.Skip(1))
+            //chars[0..1];
+
+            return input.Zip(input.Skip(1))
                 .Select(p => $"{p.First}{p.Second}")
                 .ToArray();
         }
