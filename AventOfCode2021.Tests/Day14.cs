@@ -225,35 +225,40 @@ OP -> P";
         {
             (var template, var rules) = Parse(input);
 
-            StringBuilder sb = null;
+            List<char> newSb = new List<char>(100_000_000);
+            List<char> sb = template.ToList();
+            sb.Capacity = 100_000_000;
+
+            var readFrom = sb;
+            var writeTo = newSb;
 
             for (int i = 0; i < steps; i++)
             {
-                sb = new StringBuilder(50_000);
+                //sb = new List<char>(50_000);
                 //var templatePairs = Pairify(template);
 
-                for (int j = 0; j < template.Length - 1; j++)
+                int x = 0;
+                while (x < readFrom.Count - 1)
                 {
-                    var templatePair = $"{template[j]}{template[j + 1]}";
+                    var templatePair = $"{readFrom[x]}{readFrom[x + 1]}";
                     var ruleTarget = rules[templatePair];
 
-                    sb.Append(templatePair[0]);
-                    sb.Append(ruleTarget);
+                    writeTo.Add(templatePair[0]);
+                    writeTo.Add(ruleTarget[0]);
+
+                    x++;
                 }
 
-                //foreach (var t in templatePairs)
-                //{
-                //    var ruleTarget = rules[t];
+                writeTo.Add(template.Last());
 
-                //    sb.Append(t[0]);
-                //    sb.Append(ruleTarget);
-                //}
-
-                sb.Append(template.Last());
-                template = sb.ToString();
+                //for (int q = 0; q < newSb.Count; q++) sb[q] = newSb[q];
+                //template = sb.ToString();
+                readFrom = readFrom == sb ? newSb : sb;
+                writeTo = writeTo == sb ? newSb : sb;
+                writeTo.Clear();
             }
             
-            return template;
+            return new string(readFrom.ToArray());
         }
 
         private static (string template, Dictionary<string, string> rules) Parse(string input)
