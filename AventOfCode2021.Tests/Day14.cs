@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -9,63 +10,63 @@ namespace AventOfCode2021.Tests
 {
     public class Day14
     {
-        [Theory]
-        [InlineData(1, "NCNBCHB")]
-        [InlineData(2, "NBCCNBBBCBHCB")]
-        [InlineData(3, "NBBBCNCCNBBNBNBBCHBHHBCHB")]
-        [InlineData(4, "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB")]
-        public void ExampleByResult(int steps, string expectedOutput)
-        {
-            var input = @"NNCB
+//        [Theory]
+//        [InlineData(1, "NCNBCHB")]
+//        [InlineData(2, "NBCCNBBBCBHCB")]
+//        [InlineData(3, "NBBBCNCCNBBNBNBBCHBHHBCHB")]
+//        [InlineData(4, "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB")]
+//        public void ExampleByResult(int steps, string expectedOutput)
+//        {
+//            var input = @"NNCB
 
-CH -> B
-HH -> N
-CB -> H
-NH -> C
-HB -> C
-HC -> B
-HN -> C
-NN -> C
-BH -> H
-NC -> B
-NB -> B
-BN -> B
-BB -> N
-BC -> B
-CC -> N
-CN -> C";
+//CH -> B
+//HH -> N
+//CB -> H
+//NH -> C
+//HB -> C
+//HC -> B
+//HN -> C
+//NN -> C
+//BH -> H
+//NC -> B
+//NB -> B
+//BN -> B
+//BB -> N
+//BC -> B
+//CC -> N
+//CN -> C";
 
-            var result = PerformInsertions(input, steps);
-            Assert.Equal(expectedOutput, result);
-        }
+//            var result = PerformInsertions(input, steps);
+//            Assert.Equal(expectedOutput, result);
+//        }
 
-        [Theory]
-        [InlineData(5, 97)]
-        [InlineData(10, 3073)]
-        public void ExampleByLength(int steps, int expectedLength)
-        {
-            var input = @"NNCB
+//        [Theory]
+//        [InlineData(5, 97)]
+//        [InlineData(10, 3073)]
+//        public void ExampleByLength(int steps, int expectedLength)
+//        {
+//            var input = @"NNCB
 
-CH -> B
-HH -> N
-CB -> H
-NH -> C
-HB -> C
-HC -> B
-HN -> C
-NN -> C
-BH -> H
-NC -> B
-NB -> B
-BN -> B
-BB -> N
-BC -> B
-CC -> N
-CN -> C";
+//CH -> B
+//HH -> N
+//CB -> H
+//NH -> C
+//HB -> C
+//HC -> B
+//HN -> C
+//NN -> C
+//BH -> H
+//NC -> B
+//NB -> B
+//BN -> B
+//BB -> N
+//BC -> B
+//CC -> N
+//CN -> C";
 
-            var result = PerformInsertions(input, steps);
-            Assert.Equal(expectedLength, result.Length);
-        }
+//            var result = PerformInsertions(input, steps);
+//            Assert.Equal(expectedLength, result.Length);
+//        }
 
         [Theory]
         [InlineData(10, 1588)]
@@ -91,13 +92,15 @@ BC -> B
 CC -> N
 CN -> C";
 
-            var result = PerformInsertions(input, steps);
-            var score = Score(result);
-            Assert.Equal(expectedScore, score);
+            var result = PerformInsertionsAndScore(input, steps);
+            //var score = Score(result);
+            Assert.Equal(expectedScore, result);
         }
 
-        [Fact]
-        public void MyInput()
+        [Theory]
+        [InlineData(10)]
+        [InlineData(40)]
+        public void MyInput(int steps)
         {
             var input = @"ONHOOSCKBSVHBNKFKSBK
 
@@ -202,10 +205,19 @@ PP -> K
 VB -> C
 OP -> P";
 
-            var result = PerformInsertions(input, steps: 10);
-            var score = Score(result);
+            var result = PerformInsertionsAndScore(input, steps);
+            //var score = Score(result);
 
-            Console.WriteLine(score);
+            Console.WriteLine(result);
+        }
+
+
+        private long Score(Dictionary<char, long> input)
+        {
+            var mostCommon = input.MaxBy(g => g.Value).Value;
+            var leastCommon = input.MinBy(g => g.Value).Value;
+
+            return mostCommon - leastCommon;
         }
 
         private long Score(string input)
@@ -221,47 +233,77 @@ OP -> P";
             return mostCommon.Count - leastCommon.Count;
         }
 
-        private string PerformInsertions(string input, int steps)
+        private long PerformInsertionsAndScore(string input, int steps)
         {
             (var template, var rules) = Parse(input);
 
-            List<char> newSb = new List<char>(100_000_000);
-            List<char> sb = template.ToList();
-            sb.Capacity = 100_000_000;
+            var countOfPairs = rules.ToDictionary(
+                            r => r.Key,
+                            r => Regex.Matches(template, r.Key).LongCount());
 
-            var readFrom = sb;
-            var writeTo = newSb;
+            Dictionary<string, long> nextPairs = null;
 
-            for (int i = 0; i < steps; i++)
+            void Upsert<K>(Dictionary<K, long> dict, K key, long num)
             {
-                //sb = new List<char>(50_000);
-                //var templatePairs = Pairify(template);
-
-                int x = 0;
-                while (x < readFrom.Count - 1)
+                if (!dict.ContainsKey(key))
                 {
-                    var templatePair = $"{readFrom[x]}{readFrom[x + 1]}";
-                    var ruleTarget = rules[templatePair];
-
-                    writeTo.Add(templatePair[0]);
-                    writeTo.Add(ruleTarget[0]);
-
-                    x++;
+                    dict[key] = 0;
                 }
 
-                writeTo.Add(template.Last());
-
-                //for (int q = 0; q < newSb.Count; q++) sb[q] = newSb[q];
-                //template = sb.ToString();
-                readFrom = readFrom == sb ? newSb : sb;
-                writeTo = writeTo == sb ? newSb : sb;
-                writeTo.Clear();
+                dict[key] += num;
             }
-            
-            return new string(readFrom.ToArray());
+
+            var countOfElements = template.GroupBy(c => c)
+                .ToDictionary(k => k.Key, v => v.LongCount());
+
+
+            //Pairify(template)
+            for (int i = 0; i < steps; i++)
+            {
+                nextPairs = new Dictionary<string, long>();
+                foreach(var pair in countOfPairs)
+                {
+                    var rule = rules[pair.Key];
+
+                    var newPair1 = $"{pair.Key[0]}{rule}";
+                    var newPair2 = $"{rule}{pair.Key[1]}";
+
+                    Upsert(countOfElements, rule, countOfPairs[pair.Key]);
+
+                    Upsert(nextPairs, newPair1, countOfPairs[pair.Key]);
+                    Upsert(nextPairs, newPair2, countOfPairs[pair.Key]);
+                    //Upsert(countOfPairs, newPair1, countOfPairs[pair.Key]);
+                    //Upsert(countOfPairs, newPair2, countOfPairs[pair.Key]);
+
+                    //nextPairs[pair.Key] = 0;
+                    //Upsert(nextBuffer, pair.Key, -thisBuffer[pair.Key]);
+                }
+
+                //var swap = nextPairs;
+                //countOfPairs = nextPairs[];
+                //nextBuffer = swap;
+
+                countOfPairs = nextPairs;//.ToDictionary(k => k.Key, v => v.Value);
+                //nextPairs.Clear();
+            }
+
+
+            //foreach(var k in nextBuffer)
+            //{
+            //    if (nextBuffer[k.Key] == 0) nextBuffer.Remove(k.Key);
+            //}
+
+            //var len = nextBuffer.Values.Sum();
+
+            var score = Score(countOfElements);
+
+
+
+
+            return score;
         }
 
-        private static (string template, Dictionary<string, string> rules) Parse(string input)
+        private static (string template, Dictionary<string, char> rules) Parse(string input)
         {
             var pieces = input.Split("\r\n\r\n");
             var template = pieces[0];
@@ -269,7 +311,7 @@ OP -> P";
             var insertionRules = from row in pieces[1].Split("\r\n")
                                  let operands = row.Split(" -> ")
                                  let lhs = operands[0]
-                                 let rhs = operands[1]
+                                 let rhs = operands[1][0]
                                  select (@from: lhs, @to: rhs);
 
             return (template, insertionRules.ToDictionary(k => k.from, v => v.to));
