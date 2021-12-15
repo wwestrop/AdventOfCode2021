@@ -1,28 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AdventOfCode2021
 {
     internal static class Day15
     {
-        internal static void Run()
-        {
-            var input = @"1163751742
-1381373672
-2136511328
-3694931569
-7463417111
-1319128137
-1359912421
-3125421639
-1293138521
-2311944581";
-
-            input = @"4552285989441124719798465825773318252269422625731628851155123123687151412171224298271625249662328175
+        private const string MyInput = @"4552285989441124719798465825773318252269422625731628851155123123687151412171224298271625249662328175
 8311826917677295561395716245426184212471311214851351547842124165674922644719934113217134531111711843
 3134155528231296313292951689371671611355199429313261226392991129959293212461289411393263181213122398
 7134159681533331172991932819128718131121428715191238612623891233112534231482681182354129791911339131
@@ -123,8 +106,60 @@ namespace AdventOfCode2021
 3749112349379788119372851572694972255221141172838213557111196117255932787266739885219667115595878115
 2711353211472121989372124182678117398917811239219156315953193628344552163451161917419183114199897172";
 
+        internal static void Run()
+        {
+            Part1();
+            Part2();
+        }
+
+        private static void Part1()
+        {
+            var input = @"1163751742
+1381373672
+2136511328
+3694931569
+7463417111
+1319128137
+1359912421
+3125421639
+1293138521
+2311944581";
+
+            input = MyInput;
+
             var riskMap = Common.ParseNumberGrid(input);
 
+            var shortestDistance = CalculateShortestPath(riskMap);
+            Console.WriteLine(shortestDistance);
+        }
+
+        private static void Part2()
+        {
+            var input = @"8";
+            input = @"1163751742
+1381373672
+2136511328
+3694931569
+7463417111
+1319128137
+1359912421
+3125421639
+1293138521
+2311944581";
+
+            input = MyInput;
+
+            var riskMap = Common.ParseNumberGrid(input);
+            riskMap = Times(riskMap, 5);
+
+            Common.PrintArray(riskMap);
+
+            var shortestDistance = CalculateShortestPath(riskMap);
+            Console.WriteLine(shortestDistance);
+        }
+
+        private static int CalculateShortestPath(int[,] riskMap)
+        {
             var width = riskMap.GetLength(0);
             var height = riskMap.GetLength(1);
             var tentativeDists = new int?[width, height];
@@ -135,7 +170,7 @@ namespace AdventOfCode2021
             tentativeDists[0, 0] = 0;
 
             var currentNode = new Point(0, 0);
-            while(true)
+            while (true)
             {
                 foreach (var n in Common.GetNeighbours(tentativeDists, currentNode))
                 {
@@ -160,14 +195,14 @@ namespace AdventOfCode2021
                 if (currentNode.X == width - 1 && currentNode.Y == height - 1)
                 {
                     // This is the destination
-                    Common.PrintArray(
-                        tentativeDists,
-                        conversion: n => n == null ? "    " : n.Value.ToString().PadLeft(4));
 
-                    var shortestDistance = tentativeDists[width - 1, height - 1];
-                    Console.WriteLine(shortestDistance);
+                    //Common.PrintArray(
+                    //    tentativeDists,
+                    //    conversion: n => n == null ? "    " : n.Value.ToString().PadLeft(4));
 
-                    return;
+                    var shortestDistance = tentativeDists[width - 1, height - 1].Value;
+
+                    return shortestDistance;
                 }
                 // else locate the smallest dist to go to next x,y
                 currentNode = FindNextNode(tentativeDists, visited);
@@ -196,6 +231,40 @@ namespace AdventOfCode2021
             }
 
             return smallest.coordiante;
+        }
+
+        private static int[,] Times(int[,] input, int times)
+        {
+            var width = input.GetLength(0);
+            var height = input.GetLength(1);
+
+            var result = new int[width * times, height * times];
+
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                    result[x, y] = input[x, y];
+
+            //Common.PrintArray(result);
+
+            for (int x = 0; x < width * times; x++)
+            {
+                for (int y = 0; y < height * times; y++)
+                {
+                    var equivX = x % width;
+                    var equivY = y % height;
+
+                    var xTileOffset = x / width;
+                    var yTileOffset = y / height;
+
+                    result[x, y] = result[equivX, equivY] + xTileOffset + yTileOffset;
+
+                    // Wrap
+                    if (result[x, y] > 9)
+                        result[x, y] = result[x, y] % 10 + 1;
+                }
+            }
+
+            return result;
         }
     }
 }
