@@ -8,6 +8,39 @@ namespace AventOfCode2021.Tests
     public class Day16
     {
         [Fact]
+        public void ParseSimplePacket()
+        {
+            byte[] binary = Convert.FromHexString("D2FE28");
+
+            var (version, typeId) = ParseHeader(binary);
+
+            if (typeId == Packet.Type.LiteralValue)
+            {
+                var literal = ParseLiteralValue(binary, startingFrom: 6);
+                Assert.Equal((ulong)2021, literal);
+            }
+        }
+
+        private ulong ParseLiteralValue(ReadOnlySpan<byte> binary, int startingFrom)
+        {
+            byte nibble = 0;
+            bool leadingOne = false;
+
+            ulong result = 0;
+
+            do
+            {
+                (leadingOne, nibble) = ReadNibble(binary, startingFrom);
+                result <<= 4;
+                result |= nibble;
+                startingFrom += 5;
+
+            } while (leadingOne);
+
+            return result;
+        }
+
+        [Fact]
         public void ParseHeaderTests()
         {
             byte[] binary = Convert.FromHexString("D2FE28");
