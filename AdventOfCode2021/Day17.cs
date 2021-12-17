@@ -26,6 +26,15 @@ namespace AdventOfCode2021
             // Now find the maximum value of y for any of these x, which will land in
             // the y target area. (and it can go negative, which could be a PITA)
 
+            // If y target is below the origin, then pointing down is a possibility
+            // basically the lowest we can point is the furthest distance down
+
+            // TODO not sure of the -2, but hey, maths
+            var lowestPossibleYVelocity = yrange.min - 2;
+            while (true)
+            {
+                lowestPossibleYVelocity++;
+            }
         }
 
         private static (int initialVelocity, int[] stepPositions)[] GetAllXVelocitiesWhichLandAcceptably((int min, int max) landingZone)
@@ -83,6 +92,18 @@ namespace AdventOfCode2021
             else
             {
                 return GetXPosition(initialXVelocity, stepNum - 1) + initialXVelocity - stepNum;
+            }
+        }
+
+        public static int GetYPosition(int initialYVelocity, int stepNum)
+        {
+            if (stepNum == 0)
+            {
+                return initialYVelocity;
+            }
+            else
+            {
+                return GetYPosition(initialYVelocity, stepNum - 1) + initialYVelocity - stepNum;
             }
         }
     }
