@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AdventOfCode2021
@@ -29,12 +30,47 @@ namespace AdventOfCode2021
             // If y target is below the origin, then pointing down is a possibility
             // basically the lowest we can point is the furthest distance down
 
-            // TODO not sure of the -2, but hey, maths
-            var lowestPossibleYVelocity = yrange.min - 2;
-            while (true)
+            var allYPossibilities = GetAllYVelocitiesWhichLandAcceptably(yrange);
+
+            // We can't simply take the largest arc, as we must find a combination
+            // of X that also lands on the target in the same step as the Y
+            foreach (var y in allYPossibilities)
             {
-                lowestPossibleYVelocity++;
+                foreach (var x in allXPossibilities)
+                {
+                    var allSteps = Math.Min(y.stepPositions.Length, x.stepPositions.Length);
+                    for (int s = 0; s < allSteps; s++)
+                    {
+                        if (LandsWithinRange(yrange, y.stepPositions[s])
+                            && LandsWithinRange(xrange, x.stepPositions[s]))
+                        {
+                            // This is the first output.
+                            // But oh my, three nested loops!!!
+                            // I ****WONDER**** what puzzle part 2 will be, maybe a much bigger input perhaps?????
+
+                            Console.WriteLine($"Velocity with highest arc is {x.initialVelocity},{y.initialVelocity}");
+                            return;
+                        }
+                    }
+                }
             }
+        }
+
+        private static (int initialVelocity, int[] stepPositions)[] GetAllYVelocitiesWhichLandAcceptably((int min, int max) landingZone)
+        {
+            var allYPossibilities = GetAllYStepPositionsForAllVelocities(landingZone.min);
+
+            return allYPossibilities
+                // Skip those which undershoot
+                .SkipWhile(p => !p.stepPositions.Any(c => LandsWithinRange(landingZone, c)))
+                // Take in the middle
+                .TakeWhile(p => p.stepPositions.Any(c => LandsWithinRange(landingZone, c)))
+                // End when we overshoot
+
+                // The one with the highest arc is the last one (since we searched UP,
+                // as the bottom is bounded by not totally passing the target)
+                .OrderByDescending(r => r.initialVelocity)
+                .ToArray();
         }
 
         private static (int initialVelocity, int[] stepPositions)[] GetAllXVelocitiesWhichLandAcceptably((int min, int max) landingZone)
@@ -43,9 +79,9 @@ namespace AdventOfCode2021
 
             return allXPossibilities
                 // Skip those which undershoot
-                .SkipWhile(p => !p.stepPositions.Any(c => xInRange(landingZone, c)))
+                .SkipWhile(p => !p.stepPositions.Any(c => LandsWithinRange(landingZone, c)))
                 // Take in the middle
-                .TakeWhile(p => p.stepPositions.Any(c => xInRange(landingZone, c)))
+                .TakeWhile(p => p.stepPositions.Any(c => LandsWithinRange(landingZone, c)))
                 // End when we overshoot
                 .ToArray();
         }
@@ -61,6 +97,17 @@ namespace AdventOfCode2021
             }
         }
 
+        private static IEnumerable<(int initialVelocity, int[] stepPositions)> GetAllYStepPositionsForAllVelocities(int minimumInitialVelocity)
+        {
+            var yVelocity = minimumInitialVelocity;
+            while (true)
+            {
+                var positions = GetAllYStepPositionsByVelocity(yVelocity);
+                yield return (yVelocity, positions);
+                yVelocity++;
+            }
+        }
+
         private static int[] GetAllXStepPositionsByVelocity(int initialVelocity)
         {
             // Because of the deceleration, x tends to 0 so this is finite set of possibilities
@@ -73,8 +120,19 @@ namespace AdventOfCode2021
             return allXStepsAtThisVelocity.ToArray();
         }
 
-        private static bool xInRange((int min, int max) acceptableXRange, int x)
-            => x >= acceptableXRange.min && x <= acceptableXRange.max;
+        private static int[] GetAllYStepPositionsByVelocity(int initialVelocity)
+        {
+            var debuggableMaxValue = 30;    // int.MaxValue
+
+            var allYStepsAtThisVelocity = from step in Enumerable.Range(0, debuggableMaxValue)
+                                          let pos = GetYPosition(initialVelocity, step)
+                                          select pos;
+
+            return allYStepsAtThisVelocity.ToArray();
+        }
+
+        private static bool LandsWithinRange((int min, int max) acceptableXRange, int landingPoint)
+            => landingPoint >= acceptableXRange.min && landingPoint <= acceptableXRange.max;
 
         // It's also highly exponential since it keeps getting called
         // C# doesn't know there's no side effect and can memoise
