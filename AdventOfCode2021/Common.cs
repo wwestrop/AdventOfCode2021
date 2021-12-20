@@ -1,30 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace AdventOfCode2021
 {
     public static class Common
     {
-        public static int[,] ParseNumberGrid(string input)
+        public static T[,] ParseGrid<T>(string input, Func<char, T> inputConverter)
         {
             var rows = input.Split(Environment.NewLine);
 
             var width = rows[0].Length;        // Assume they're all equal
             var height = rows.Count();
 
-            int[,] result = new int[width, height];
+            T[,] result = new T[width, height];
 
             for (int r = 0; r < height; r++)
             {
                 var cols = rows[r].ToCharArray();
                 for (int c = 0; c < width; c++)
                 {
-                    result[c, r] = CharToInt(cols[c]);
+                    result[c, r] = inputConverter(cols[c]);
                 }
             }
 
             return result;
         }
+
+        public static int[,] ParseNumberGrid(string input)
+            => ParseGrid(input, CharToInt);
 
         private static int CharToInt(char c)
         {
@@ -98,6 +103,69 @@ namespace AdventOfCode2021
                 {
                     manipulation(input, c, r);
                 }
+            }
+        }
+
+        public static IEnumerable<Point> GetNeighbourCoordinates<T>(T[,] input, Point coordinate)
+        {
+            int width = input.GetLength(0);
+            int height = input.GetLength(1);
+
+            if (coordinate.Y != 0)
+            {
+                // north
+                yield return new Point(coordinate.X, coordinate.Y - 1);
+            }
+            if (coordinate.Y != height - 1)
+            {
+                // south
+                yield return new Point(coordinate.X, coordinate.Y + 1);
+            }
+            if (coordinate.X != 0)
+            {
+                // west
+                yield return new Point(coordinate.X - 1, coordinate.Y);
+            }
+            if (coordinate.X != width - 1)
+            {
+                // east
+                yield return new Point(coordinate.X + 1, coordinate.Y);
+            }
+        }
+
+        public static IEnumerable<Point> GetNeighbourCoordinatesPlusDiagonals<T>(T[,] input, Point coordinate)
+        {
+            int width = input.GetLength(0);
+            int height = input.GetLength(1);
+
+            foreach (var c in GetNeighbourCoordinates(input, coordinate))
+            {
+                yield return c;
+            }
+
+
+            if (coordinate.X != 0 && coordinate.Y != 0)
+            {
+                // northwest
+                yield return new Point(coordinate.X - 1, coordinate.Y - 1);
+            }
+
+            if (coordinate.X != width - 1 && coordinate.Y != 0)
+            {
+                // northeast
+                yield return new Point(coordinate.X + 1, coordinate.Y - 1);
+            }
+
+            if (coordinate.X != 0 && coordinate.Y != height - 1)
+            {
+                // southwest
+                yield return new Point(coordinate.X - 1, coordinate.Y + 1);
+            }
+
+            if (coordinate.X != width - 1 && coordinate.Y != height - 1)
+            {
+                // southeast
+                yield return new Point(coordinate.X + 1, coordinate.Y + 1);
             }
         }
     }

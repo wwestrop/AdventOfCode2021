@@ -123,7 +123,7 @@ namespace AventOfCode2021.Tests
                 input[coordiante.X, coordiante.Y] = -1;
 
                 // Propogate out to the neigbour cells
-                foreach (var neighbour in GetNeighbourCoordinates(input, coordiante))
+                foreach (var neighbour in Common.GetNeighbourCoordinatesPlusDiagonals(input, coordiante))
                 {
                     IncrementEnergyAt(input, neighbour);
                 }
@@ -134,58 +134,5 @@ namespace AventOfCode2021.Tests
             => Common.ManipulateGridCells(
                 input,
                 (i, x, y) => IncrementEnergyAt(i, new Point(x, y)));
-
-        private static IEnumerable<Point> GetNeighbourCoordinates(int[,] input, Point coordinate)
-        {
-            int width = input.GetLength(0);
-            int height = input.GetLength(1);
-
-            if (coordinate.Y != 0)
-            {
-                // north
-                yield return new Point(coordinate.X, coordinate.Y - 1);
-            }
-            if (coordinate.Y != height - 1)
-            {
-                // south
-                yield return new Point(coordinate.X, coordinate.Y + 1);
-            }
-            if (coordinate.X != 0)
-            {
-                // west
-                yield return new Point(coordinate.X - 1, coordinate.Y);
-            }
-            if (coordinate.X != width - 1)
-            {
-                // east
-                yield return new Point(coordinate.X + 1, coordinate.Y);
-            }
-
-
-
-            if (coordinate.X != 0 && coordinate.Y != 0)
-            {
-                // northwest
-                yield return new Point(coordinate.X - 1, coordinate.Y - 1);
-            }
-
-            if (coordinate.X != width - 1 && coordinate.Y != 0)
-            {
-                // northeast
-                yield return new Point(coordinate.X + 1, coordinate.Y - 1);
-            }
-
-            if (coordinate.X != 0 && coordinate.Y != height - 1)
-            {
-                // southwest
-                yield return new Point(coordinate.X - 1, coordinate.Y + 1);
-            }
-
-            if (coordinate.X != width - 1 && coordinate.Y != height - 1)
-            {
-                // southeast
-                yield return new Point(coordinate.X + 1, coordinate.Y + 1);
-            }
-        }
     }
 }
