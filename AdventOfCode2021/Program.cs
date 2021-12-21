@@ -4,6 +4,7 @@
     {
         public static void Main()
         {
+            Day21.Run();
             Day20.Run();
             Day17.Run();
             // Day16 in test project
